@@ -56,4 +56,18 @@ class UserController extends Controller
         $user->delete();
         return to_route('admin.users.index');
     }
+
+    public function employee(Request $request)
+    {
+        $users = User::select('id', 'name', 'email')
+            ->with([
+                'roles:id,name'
+            ])
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'employee');
+            })
+            ->get();
+
+        return Inertia::render('Admin/Users/Employee', compact('users'));
+    }
 }
