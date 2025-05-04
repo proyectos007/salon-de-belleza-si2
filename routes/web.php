@@ -38,5 +38,6 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'),])->group(fu
             Route::resource('roles', Admin\RoleController::class)->except(['show']);
             Route::post('/roles/{role}/permissions', [Admin\RoleController::class, 'assignPermissions'])->name('roles.permissions');
             Route::resource('permissions', Admin\PermissionController::class)->except(['show']);
+            Route::resource('clients', Admin\ClientController::class);
         });
 });

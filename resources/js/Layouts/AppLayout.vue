@@ -29,6 +29,11 @@ const navItems = [
         route: `${adminRoute}.users.employee`,
     },
     {
+        name: "Gestionar Clientes",
+        icon: "fa-solid fa-users",
+        route: `${adminRoute}.clients.index`,
+    },
+    {
         name: "Gestionar Roles y Permisos",
         icon: "fa-solid fa-users",
         route: `${adminRoute}.roles.index`,

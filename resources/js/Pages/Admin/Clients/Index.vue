@@ -1,49 +1,31 @@
 <script setup>
 import AppLayout from "@/Layouts/AppLayout.vue";
 import { defineProps, ref } from "vue";
-import DataTable from "primevue/datatable";
-import Column from "primevue/column";
-import Button from "primevue/button";
+import { DataTable, Column, Button } from "primevue";
 import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
-import Select from "primevue/select";
-import { router, useForm } from "@inertiajs/vue3";
 import { useToast } from "primevue/usetoast";
+import { useForm } from "@inertiajs/vue3";
+import { ROLES } from "@/Contants/Role.js";
 
 defineProps({
-    users: Object,
-    roles: Object,
+    clients: Object,
 });
 
 const isOpenModal = ref(false);
-const isEditModalOpen = ref(false);
-const selectedUser = ref(null);
+const toast = useToast();
+
 const createUserForm = useForm({
     name: "",
     email: "",
-    role_id: null,
+    role_id: 2,
     password: "",
     password_confirmation: "",
 });
-const editUserForm = useForm({
-    id: null,
-    name: "",
-    email: "",
-    role_id: null,
-});
-const toast = useToast();
-
-const openEditModal = (user) => {
-    selectedUser.value = user;
-    editUserForm.id = user.id;
-    editUserForm.name = user.name;
-    editUserForm.email = user.email;
-    editUserForm.role_id = user.roles[0]?.id;
-    isEditModalOpen.value = true;
-};
 
 const submitCreateUser = () => {
-    createUserForm.post(route("admin.users.store"), {
+    createUserForm.role_id = ROLES.client;
+    createUserForm.post(route("admin.clients.store"), {
         preserveScroll: true,
         preserveState: true,
         onSuccess: (response) => {
@@ -91,49 +73,6 @@ const submitCreateUser = () => {
         },
     });
 };
-
-const deleteUser = (user) => {
-    if (confirm("¿Seguro que deseas eliminar este users?")) {
-        router.delete(route("admin.users.destroy", user.id), {
-            preserveScroll: true,
-            onSuccess: () =>
-                toast.add({
-                    severity: "success",
-                    summary: "Usuario eliminado exitosamente.",
-                    life: 4000,
-                }),
-        });
-    }
-};
-
-const submitEditUser = () => {
-    editUserForm.put(route("admin.users.update", editUserForm.id), {
-        preserveScroll: true,
-        preserveState: true,
-        onSuccess: () => {
-            toast.add({
-                severity: "success",
-                summary: "Éxito",
-                detail: "Usuario actualizado correctamente",
-                life: 5000,
-            });
-            isEditModalOpen.value = false;
-            editUserForm.reset();
-        },
-        onError: (error) => {
-            Object.values(error)
-                .flat()
-                .forEach((message) => {
-                    toast.add({
-                        severity: "error",
-                        summary: "Error",
-                        detail: message,
-                        life: 5000,
-                    });
-                });
-        },
-    });
-};
 </script>
 
 <template>
@@ -141,7 +80,7 @@ const submitEditUser = () => {
         <div class="mt-4 bg-white shadow-md p-4 rounded-lg">
             <div class="flex justify-between my-5">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    Gestionar usuarios
+                    Gestionar Clientes
                 </h2>
                 <Button
                     label="Crear Usuarios"
@@ -150,17 +89,19 @@ const submitEditUser = () => {
             </div>
 
             <div class="card">
-                <DataTable :value="users" tableStyle="min-width: 50rem">
+                <DataTable :value="clients" tableStyle="min-width: 50rem">
                     <Column field="id" header="Codigo"></Column>
                     <Column field="name" header="Nombre"></Column>
                     <Column field="email" header="Correo"></Column>
-
-                    <Column header="Rol">
+                    <Column header="Dinero Gastado">
+                        <template #body="{ data }">{{ 0 }}</template></Column
+                    >
+                    <!-- <Column header="Rol">
                         <template #body="{ data }">{{
                             data.roles[0]?.name
                         }}</template></Column
-                    >
-                    <Column header="Acciones">
+                    > -->
+                    <!-- <Column header="Acciones">
                         <template #body="{ data }">
                             <div class="flex gap-2">
                                 <Button
@@ -176,14 +117,14 @@ const submitEditUser = () => {
                                 />
                             </div>
                         </template>
-                    </Column>
+                    </Column> -->
                 </DataTable>
             </div>
 
             <Dialog
                 v-model:visible="isOpenModal"
                 class="py-5 px-2"
-                header="Creando Usuario"
+                header="Creando Cliente"
                 :style="{ width: '25rem' }"
             >
                 <form @submit.prevent="submitCreateUser">
@@ -206,7 +147,7 @@ const submitEditUser = () => {
                         />
                     </div>
 
-                    <div class="flex flex-col gap-2 mb-2">
+                    <!-- <div class="flex flex-col gap-2 mb-2">
                         <label for="email">Rol</label>
                         <Select
                             v-model="createUserForm.role_id"
@@ -216,7 +157,7 @@ const submitEditUser = () => {
                             placeholder="Selecciona el rol"
                             class="w-full"
                         />
-                    </div>
+                    </div> -->
 
                     <div class="flex flex-col gap-2 mb-2">
                         <label for="password">Contraseña</label>
@@ -246,50 +187,6 @@ const submitEditUser = () => {
                             label="Crear"
                             type="submit"
                             :loading="createUserForm.processing"
-                        />
-                    </div>
-                </form>
-            </Dialog>
-
-            <Dialog
-                v-model:visible="isEditModalOpen"
-                :header="`Editando Usuario (${selectedUser?.name})`"
-                :style="{ width: '25rem' }"
-                class="py-5 px-2"
-            >
-                <form @submit.prevent="submitEditUser">
-                    <div class="flex flex-col gap-2 mb-2">
-                        <label for="edit-name">Nombre</label>
-                        <InputText id="edit-name" v-model="editUserForm.name" />
-                    </div>
-                    <div class="flex flex-col gap-2 mb-2">
-                        <label for="edit-email">Correo</label>
-                        <InputText
-                            id="edit-email"
-                            v-model="editUserForm.email"
-                        />
-                    </div>
-                    <div class="flex flex-col gap-2 mb-2">
-                        <label for="email">Rol</label>
-                        <Select
-                            v-model="editUserForm.role_id"
-                            :options="roles"
-                            optionValue="id"
-                            optionLabel="name"
-                            placeholder="Selecciona el rol"
-                            class="w-full"
-                        />
-                    </div>
-                    <div class="flex justify-between py-2">
-                        <Button
-                            label="Cancelar"
-                            @click="() => (isEditModalOpen = false)"
-                            :loading="editUserForm.processing"
-                        />
-                        <Button
-                            label="Actualizar"
-                            type="submit"
-                            :loading="editUserForm.processing"
                         />
                     </div>
                 </form>
