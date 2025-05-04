@@ -5,6 +5,7 @@ use App\Http\Controllers\ServiceController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\ScheduleController;
 use Inertia\Inertia;
 
 include 'api.php';
@@ -28,7 +29,10 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'),])->group(fu
     Route::get('/services/get-list', [ServiceController::class, 'getList'])->name('services.get-list');
     Route::resource('/services', ServiceController::class);
     Route::resource('/combos', ComboController::class);
-
+    Route::resource('/schedules', ScheduleController::class)->only(['store']);
+    Route::get('/schedules/get-list', [ScheduleController::class, 'getList'])->name('schedules.list');
+    Route::post('/schedules/user/update', [ScheduleController::class, 'updateUser'])->name('schedules.user.update');
+    
     // admin.roles.store 
     Route::prefix('admin')
         ->name('admin.')
@@ -38,5 +42,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'),])->group(fu
             Route::resource('roles', Admin\RoleController::class)->except(['show']);
             Route::post('/roles/{role}/permissions', [Admin\RoleController::class, 'assignPermissions'])->name('roles.permissions');
             Route::resource('permissions', Admin\PermissionController::class)->except(['show']);
+
+            Route::get('/backup', [Admin\UserController::class, 'backup'])->name('backup');
         });
 });
