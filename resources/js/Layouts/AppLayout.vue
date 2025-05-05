@@ -3,6 +3,7 @@ import { ref, defineProps } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import SideNavItem from "@/Components/SideNavItem.vue";
 import { Toast } from "primevue";
+import EditModal from "@/Pages/Admin/Users/EditModal.vue";
 
 const props = defineProps({
     title: String,
@@ -10,6 +11,7 @@ const props = defineProps({
 });
 
 const page = usePage();
+const editUser = ref(false);
 
 const adminRoute = "admin";
 const navItems = [
@@ -93,8 +95,12 @@ const logout = () => {
             >
                 <nav class="sticky top-0 border-gray-200 border-r-4 h-screen">
                     <a href="#" class="block mx-2 mt-4">
-                        <div class="flex justify-center">
+                        <div class="flex justify-center gap-1">
                             <i class="fa-solid fa-circle-user text-8xl"></i>
+                            <i
+                                class="pi pi-pencil"
+                                @click="() => (editUser = true)"
+                            ></i>
                         </div>
 
                         <div class="*:text-center mb-4 rounded mt-2">
@@ -154,5 +160,7 @@ const logout = () => {
                 </div>
             </div>
         </div>
+
+        <EditModal v-model="editUser" />
     </div>
 </template>

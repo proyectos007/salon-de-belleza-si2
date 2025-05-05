@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\UserActionLogged;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UserController\StoreUserReques;
 use App\Http\Requests\Admin\UserController\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
@@ -27,6 +29,12 @@ class UserController extends Controller
 
     public function store(StoreUserReques $request)
     {
+        event(new UserActionLogged(
+            action: 'Crear usuario',
+            userId: Auth::id(),
+            ipAddress: $request->ip()
+        ));
+
         $validated = $request->validated();
 
         $user = User::create([
@@ -42,7 +50,19 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user)
     {
+        event(new UserActionLogged(
+            action: 'Actualizar usuario',
+            userId: Auth::id(),
+            ipAddress: $request->ip()
+        ));
+
         $validated = $request->validated();
+
+        if (isset($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
 
         $user->update($validated);
         $user->syncRoles($validated['role_id']);
