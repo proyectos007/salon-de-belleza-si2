@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\UserActionLogged;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
@@ -25,7 +27,12 @@ class RoleController extends Controller
 
     public function store(Request $request)
     {
-        // dd($request->all());
+        event(new UserActionLogged(
+            action: 'Crear rol',
+            userId: Auth::id(),
+            ipAddress: $request->ip()
+        ));
+
         $request->validate([
             'name' => ['required', 'string', 'max:50', 'unique:roles,name']
         ], [
@@ -43,6 +50,12 @@ class RoleController extends Controller
 
     public function update(Request $request, Role $role)
     {
+        event(new UserActionLogged(
+            action: 'Editar rol',
+            userId: Auth::id(),
+            ipAddress: $request->ip()
+        ));
+
         $request->validate([
             'name' => ['required', 'string', 'max:50', 'unique:roles,name,' . $role->id]
         ]);
@@ -54,6 +67,12 @@ class RoleController extends Controller
 
     public function destroy(Role $role)
     {
+        event(new UserActionLogged(
+            action: 'Eliminar rol',
+            userId: Auth::id(),
+            ipAddress: 'Desconocido'
+        ));
+
         $hasUsers = DB::table('model_has_roles')
             ->where('role_id', $role->id)
             ->exists();
@@ -72,6 +91,11 @@ class RoleController extends Controller
 
     public function assignPermissions(Request $request, Role $role)
     {
+        event(new UserActionLogged(
+            action: 'Asignar permiso',
+            userId: Auth::id(),
+            ipAddress: $request->ip()
+        ));
         $validated = $request->validate([
             'permissions' => ['array'],
             'permissions.*' => ['exists:permissions,id'],

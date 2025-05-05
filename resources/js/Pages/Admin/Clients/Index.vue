@@ -96,28 +96,6 @@ const submitCreateUser = () => {
                     <Column header="Dinero Gastado">
                         <template #body="{ data }">{{ 0 }}</template></Column
                     >
-                    <!-- <Column header="Rol">
-                        <template #body="{ data }">{{
-                            data.roles[0]?.name
-                        }}</template></Column
-                    > -->
-                    <!-- <Column header="Acciones">
-                        <template #body="{ data }">
-                            <div class="flex gap-2">
-                                <Button
-                                    label="Editar"
-                                    icon="pi pi-pencil"
-                                    @click="() => openEditModal(data)"
-                                    class="p-button-sm"
-                                />
-                                <Button
-                                    icon="pi pi-trash"
-                                    severity="danger"
-                                    @click="deleteUser(data)"
-                                />
-                            </div>
-                        </template>
-                    </Column> -->
                 </DataTable>
             </div>
 

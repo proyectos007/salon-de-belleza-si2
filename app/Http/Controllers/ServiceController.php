@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\UserActionLogged;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
@@ -29,6 +31,7 @@ class ServiceController extends Controller
 
     public function store(Request $request)
     {
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric',
@@ -47,9 +50,19 @@ class ServiceController extends Controller
         }
 
         if ($request->id) {
+            event(new UserActionLogged(
+                action: 'Editar servicio',
+                userId: Auth::id(),
+                ipAddress: 'Desconocido'
+            ));
             $service = Service::find($request->id);
             $service->update($validated);
         } else {
+            event(new UserActionLogged(
+                action: 'Crear servicio',
+                userId: Auth::id(),
+                ipAddress: 'Desconocido'
+            ));
             $service = Service::create($validated);
         }
 
@@ -71,6 +84,12 @@ class ServiceController extends Controller
 
     public function destroy(Service $service)
     {
+        event(new UserActionLogged(
+            action: 'Eliminar servicio',
+            userId: Auth::id(),
+            ipAddress: 'Desconocido'
+        ));
+
         $service->delete();
 
         return redirect()->route('services.index')->with('message', 'Servicio eliminado');

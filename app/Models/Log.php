@@ -11,4 +11,9 @@ class Log extends Model
         'action',
         'ip_address',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

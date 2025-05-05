@@ -32,7 +32,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'),])->group(fu
     Route::resource('/schedules', ScheduleController::class)->only(['store'])->middleware('NotClientMiddleware');
     Route::get('/schedules/get-list', [ScheduleController::class, 'getList'])->name('schedules.list')->middleware('NotClientMiddleware');
     Route::post('/schedules/user/update', [ScheduleController::class, 'updateUser'])->name('schedules.user.update')->middleware('NotClientMiddleware');
-    
+
     // admin.roles.store 
     Route::prefix('admin')
         ->name('admin.')
@@ -44,5 +44,6 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'),])->group(fu
             Route::resource('permissions', Admin\PermissionController::class)->except(['show'])->middleware('NotClientMiddleware');
             Route::resource('clients', Admin\ClientController::class)->middleware('NotClientMiddleware');
             Route::get('/backup', [Admin\UserController::class, 'backup'])->name('backup')->middleware('NotClientMiddleware');
+            Route::get('/logs', [Admin\LogController::class, 'index'])->name('logs.index');
         });
 });
