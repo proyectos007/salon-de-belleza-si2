@@ -26,23 +26,23 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'),])->group(fu
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
-    Route::get('/services/get-list', [ServiceController::class, 'getList'])->name('services.get-list');
-    Route::resource('/services', ServiceController::class);
-    Route::resource('/combos', ComboController::class);
-    Route::resource('/schedules', ScheduleController::class)->only(['store']);
-    Route::get('/schedules/get-list', [ScheduleController::class, 'getList'])->name('schedules.list');
-    Route::post('/schedules/user/update', [ScheduleController::class, 'updateUser'])->name('schedules.user.update');
+    Route::get('/services/get-list', [ServiceController::class, 'getList'])->name('services.get-list')->middleware('NotClientMiddleware');
+    Route::resource('/services', ServiceController::class)->middleware('NotClientMiddleware');
+    Route::resource('/combos', ComboController::class)->middleware('NotClientMiddleware');
+    Route::resource('/schedules', ScheduleController::class)->only(['store'])->middleware('NotClientMiddleware');
+    Route::get('/schedules/get-list', [ScheduleController::class, 'getList'])->name('schedules.list')->middleware('NotClientMiddleware');
+    Route::post('/schedules/user/update', [ScheduleController::class, 'updateUser'])->name('schedules.user.update')->middleware('NotClientMiddleware');
     
     // admin.roles.store 
     Route::prefix('admin')
         ->name('admin.')
         ->group(function () {
-            Route::resource('users', Admin\UserController::class)->except(['show']);
-            Route::get('/users/employee', [Admin\UserController::class, 'employee'])->name('users.employee');
-            Route::resource('roles', Admin\RoleController::class)->except(['show']);
-            Route::post('/roles/{role}/permissions', [Admin\RoleController::class, 'assignPermissions'])->name('roles.permissions');
-            Route::resource('permissions', Admin\PermissionController::class)->except(['show']);
+            Route::resource('users', Admin\UserController::class)->except(['show'])->middleware('NotClientMiddleware');
+            Route::get('/users/employee', [Admin\UserController::class, 'employee'])->name('users.employee')->middleware('NotClientMiddleware');
+            Route::resource('roles', Admin\RoleController::class)->except(['show'])->middleware('NotClientMiddleware');
+            Route::post('/roles/{role}/permissions', [Admin\RoleController::class, 'assignPermissions'])->name('roles.permissions')->middleware('NotClientMiddleware');
+            Route::resource('permissions', Admin\PermissionController::class)->except(['show'])->middleware('NotClientMiddleware');
 
-            Route::get('/backup', [Admin\UserController::class, 'backup'])->name('backup');
+            Route::get('/backup', [Admin\UserController::class, 'backup'])->name('backup')->middleware('NotClientMiddleware');
         });
 });
