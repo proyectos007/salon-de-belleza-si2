@@ -115,7 +115,9 @@ const logout = () => {
                     <div
                         class="*:py-2 *:pl-4 *:pr-6 *:my-2 *:rounded-l-lg *:transition *:duration-200 *:block"
                     >
+                   
                         <SideNavItem
+                            v-if="page.props.user.roles[0].name != 'client'"
                             v-for="item in navItems"
                             :key="item.route"
                             :name="item.route"

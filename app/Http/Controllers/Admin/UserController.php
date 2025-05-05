@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UserController\StoreUserReques;
 use App\Http\Requests\Admin\UserController\UpdateUserRequest;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 
@@ -59,7 +62,7 @@ class UserController extends Controller
 
     public function employee(Request $request)
     {
-        $users = User::select('id', 'name', 'email')
+        $users = User::select('id', 'name', 'email', 'schedule_id')
             ->with([
                 'roles:id,name'
             ])
@@ -69,5 +72,51 @@ class UserController extends Controller
             ->get();
 
         return Inertia::render('Admin/Users/Employee', compact('users'));
+    }
+
+    public function backup ()
+    {
+        //echo('test');
+        $database = env('DB_DATABASE');
+        $backupFileName = $database . '_backup_' . Carbon::now()->format('Y-m-d_H-i-s') . '.csv';
+        $backupPath = storage_path('app/public/backups/' . $backupFileName);
+
+        if (!Storage::exists('backups')) {
+            Storage::makeDirectory('backups', 0755, true);
+        }
+
+        $dbDriver = DB::getDriverName();
+
+        if ($dbDriver === 'mysql') {
+            $tables = DB::select('SHOW TABLES');
+            $tableKey = 'Tables_in_' . $database;
+        } elseif ($dbDriver === 'pgsql') {
+            $tables = DB::select("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+            $tableKey = 'table_name';
+        } else {
+            $this->error('Unsupported database driver: ' . $dbDriver);
+            return;
+        }
+        
+        $handle = fopen($backupPath, 'w');
+        foreach ($tables as $table) {
+            $tableName = $table->$tableKey;
+            $rows = DB::table($tableName)->get();
+
+            fwrite($handle, 'Table: ' . $tableName . "\n");
+
+            foreach ($rows as $row) {
+                $line = implode(',', (array) $row);
+                fwrite($handle, $line . "\n");
+            }
+
+            fwrite($handle, "\n\n");
+        }
+
+        
+        //dd($backupPath);
+        fclose($handle);
+
+        return response()->download($backupPath)->deleteFileAfterSend(true);
     }
 }
